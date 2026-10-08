@@ -5,97 +5,100 @@ namespace App\DataTables\CallLogs;
 use App\Models\CallLog;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
-use Yajra\DataTables\Html\Builder as HtmlBuilder;
-use Yajra\DataTables\Html\Button;
-use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
 class CallLogDataTable extends DataTable
 {
-    /**
-     * Build the DataTable class.
-     */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->filterColumn('phone_number', function($query, $keyword) {
+                $query->where('phone_number', 'like', "%{$keyword}%");
+            })
             ->editColumn('user_id', function ($log) {
-                return $log->user ? $log->user->name : 'System/Webhook';
+                $name = $log->user ? $log->user->name : 'System/Webhook';
+                $avatar = $log->user ? '<span class="avatar avatar-sm me-2" style="background-image: url(https://ui-avatars.com/api/?name='.urlencode($name).')"></span>' : '<span class="avatar avatar-sm me-2 bg-azure-lt">API</span>';
+                return '
+                    <div class="d-flex align-items-center">
+                        ' . $avatar . '
+                        <div>
+                            <div class="fw-semibold text-reset text-decoration-none">' . e($name) . '</div>
+                        </div>
+                    </div>
+                ';
+            })
+            ->editColumn('phone_number', function ($log) {
+                return '<span class="text-secondary fw-semibold">' . e($log->phone_number ?? '—') . '</span>';
             })
             ->editColumn('call_timing', function ($log) {
-                return $log->call_timing ? $log->call_timing->format('d M Y, h:i A') : $log->created_at->format('d M Y, h:i A');
+                $timing = $log->call_timing ? $log->call_timing->format('d M Y, H:i') : $log->created_at->format('d M Y, H:i');
+                return '<div class="text-secondary">' . $timing . '</div>';
+            })
+            ->editColumn('call_duration', function ($log) {
+                return '<span class="text-secondary">' . e($log->call_duration ?? '—') . '</span>';
             })
             ->editColumn('sentiment', function ($log) {
                 $sentiment = strtolower($log->sentiment);
                 if ($sentiment == 'positive') {
-                    return '<span class="badge bg-success">Positive</span>';
+                    $color = 'success';
+                    $icon = 'ti-mood-smile';
                 } elseif ($sentiment == 'negative') {
-                    return '<span class="badge bg-danger">Negative</span>';
+                    $color = 'danger';
+                    $icon = 'ti-mood-sad';
+                } else {
+                    $color = 'secondary';
+                    $icon = 'ti-mood-empty';
                 }
-                return '<span class="badge bg-secondary">' . ucfirst($log->sentiment ?? 'N/A') . '</span>';
+                
+                return '
+                    <span class="badge badge-outline text-' . $color . ' fs-5">
+                        <i class="ti ' . $icon . ' me-1"></i>' . ucfirst($log->sentiment ?? 'Neutral') . '
+                    </span>
+                ';
             })
             ->editColumn('is_success', function ($log) {
-                return $log->is_success 
-                    ? '<span class="text-success"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg></span>'
-                    : '<span class="text-danger"><svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg></span>';
+                if ($log->is_success) {
+                    return '<span class="badge bg-green-lt"><i class="ti ti-check me-1"></i>Success</span>';
+                }
+                return '<span class="badge bg-red-lt"><i class="ti ti-x me-1"></i>Failed</span>';
             })
-            ->addColumn('action', function($log) {
-                return '<a href="'.route('admin.call-logs.show', $log->id).'" class="btn btn-sm btn-primary">View</a>';
+            ->addColumn('actions', function ($log) {
+                $viewUrl = route('admin.call-logs.show', $log->id);
+
+                return '
+                    <div class="d-flex gap-1 justify-content-end">
+                        <a href="' . $viewUrl . '"
+                            class="btn btn-icon btn-sm btn-outline-primary"
+                            data-bs-toggle="tooltip" title="View Details">
+                            <i class="ti ti-eye"></i>
+                        </a>
+                    </div>
+                ';
             })
-            ->rawColumns(['sentiment', 'is_success', 'action'])
-            ->setRowId('id');
+            ->rawColumns([
+                'user_id',
+                'phone_number',
+                'call_timing',
+                'call_duration',
+                'sentiment',
+                'is_success',
+                'actions',
+            ]);
     }
 
-    /**
-     * Get the query source of dataTable.
-     */
     public function query(CallLog $model): QueryBuilder
     {
-        return $model->newQuery()->with('user')->orderBy('id', 'desc');
+        $query = $model->newQuery()->with('user')->latest('id');
+
+        if (request()->filled('sentiment')) {
+            $query->where('sentiment', request('sentiment'));
+        }
+
+        return $query;
     }
 
-    /**
-     * Optional method if you want to use the html builder.
-     */
-    public function html(): HtmlBuilder
+    public function filename(): string
     {
-        return $this->builder()
-                    ->setTableId('calllog-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    ->orderBy(0)
-                    ->selectStyleSingle()
-                    ->parameters([
-                        'dom' => 'Bfrtip',
-                        'buttons' => ['excel', 'csv', 'print', 'reset', 'reload'],
-                    ]);
-    }
-
-    /**
-     * Get the dataTable columns definition.
-     */
-    public function getColumns(): array
-    {
-        return [
-            Column::make('id')->title('ID'),
-            Column::make('user_id')->title('Agent/User'),
-            Column::make('phone_number')->title('Voter Number'),
-            Column::make('call_timing')->title('Date & Time'),
-            Column::make('call_duration')->title('Duration'),
-            Column::make('sentiment')->title('Sentiment')->className('text-center'),
-            Column::make('is_success')->title('Status')->className('text-center'),
-            Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->width(60)
-                  ->addClass('text-center'),
-        ];
-    }
-
-    /**
-     * Get the filename for export.
-     */
-    protected function filename(): string
-    {
-        return 'CallLog_' . date('YmdHis');
+        return 'CallLog_' . date('Y_m_d_His');
     }
 }
