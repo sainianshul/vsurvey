@@ -142,12 +142,14 @@ The transcribed text from the call is diarized (Speaker 1 and Speaker 2):
 
 Analyze the conversation. Usually, one speaker is the surveyor (asking questions) and the other is the voter (answering).
 Return ONLY a valid JSON object with no markdown formatting or extra text.
+IMPORTANT: All text values in the JSON (except sentiment) MUST BE IN HINDI LANGUAGE (Devanagari script).
+
 The JSON must have the following keys:
-- "sentiment": "positive", "negative", or "neutral" (overall sentiment of the voter towards the incumbent party/government)
-- "keywords": Array of strings representing important/major keywords mentioned (e.g. ["unemployment", "inflation", "roads"])
-- "complaints": Array of strings summarizing any complaints generated or raised by the voter.
-- "feedback": String summarizing the feedback given by the voter.
-- "key_points": Array of strings representing the key points detected in the conversation.
+- "sentiment": "positive", "negative", or "neutral" (overall sentiment of the voter towards the incumbent party/government. This MUST be in English).
+- "keywords": Array of strings representing important/major keywords mentioned (e.g. ["बेरोजगारी", "महंगाई", "सड़क"]). IN HINDI.
+- "complaints": Array of strings summarizing any complaints generated or raised by the voter. IN HINDI.
+- "feedback": String summarizing the feedback given by the voter. IN HINDI.
+- "key_points": Array of strings representing the key points detected in the conversation. IN HINDI.
 """
 
     # 1. Start with the currently active model to avoid wasting time

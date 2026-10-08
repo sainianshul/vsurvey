@@ -15,20 +15,13 @@ class CallLogDataTable extends DataTable
             ->filterColumn('phone_number', function($query, $keyword) {
                 $query->where('phone_number', 'like', "%{$keyword}%");
             })
+            ->editColumn('phone_number', function ($log) {
+                $viewUrl = route('admin.call-logs.show', $log->id);
+                return '<a href="' . $viewUrl . '" class="fw-semibold text-primary text-decoration-none">' . e($log->phone_number ?? '—') . '</a>';
+            })
             ->editColumn('user_id', function ($log) {
                 $name = $log->user ? $log->user->name : 'System/Webhook';
-                $avatar = $log->user ? '<span class="avatar avatar-sm me-2" style="background-image: url(https://ui-avatars.com/api/?name='.urlencode($name).')"></span>' : '<span class="avatar avatar-sm me-2 bg-azure-lt">API</span>';
-                return '
-                    <div class="d-flex align-items-center">
-                        ' . $avatar . '
-                        <div>
-                            <div class="fw-semibold text-reset text-decoration-none">' . e($name) . '</div>
-                        </div>
-                    </div>
-                ';
-            })
-            ->editColumn('phone_number', function ($log) {
-                return '<span class="text-secondary fw-semibold">' . e($log->phone_number ?? '—') . '</span>';
+                return '<span class="text-secondary fw-semibold">' . e($name) . '</span>';
             })
             ->editColumn('call_timing', function ($log) {
                 $timing = $log->call_timing ? $log->call_timing->format('d M Y, H:i') : $log->created_at->format('d M Y, H:i');
@@ -51,16 +44,16 @@ class CallLogDataTable extends DataTable
                 }
                 
                 return '
-                    <span class="badge badge-outline text-' . $color . ' fs-5">
+                    <span class="badge badge-outline rounded-0 text-' . $color . ' fs-5">
                         <i class="ti ' . $icon . ' me-1"></i>' . ucfirst($log->sentiment ?? 'Neutral') . '
                     </span>
                 ';
             })
             ->editColumn('is_success', function ($log) {
                 if ($log->is_success) {
-                    return '<span class="badge bg-green-lt"><i class="ti ti-check me-1"></i>Success</span>';
+                    return '<span class="badge badge-outline rounded-0 text-success"><i class="ti ti-check me-1"></i>Success</span>';
                 }
-                return '<span class="badge bg-red-lt"><i class="ti ti-x me-1"></i>Failed</span>';
+                return '<span class="badge badge-outline rounded-0 text-danger"><i class="ti ti-x me-1"></i>Failed</span>';
             })
             ->addColumn('actions', function ($log) {
                 $viewUrl = route('admin.call-logs.show', $log->id);
@@ -68,7 +61,7 @@ class CallLogDataTable extends DataTable
                 return '
                     <div class="d-flex gap-1 justify-content-end">
                         <a href="' . $viewUrl . '"
-                            class="btn btn-icon btn-sm btn-outline-primary"
+                            class="btn btn-icon btn-sm btn-outline-primary rounded-0"
                             data-bs-toggle="tooltip" title="View Details">
                             <i class="ti ti-eye"></i>
                         </a>
@@ -76,8 +69,8 @@ class CallLogDataTable extends DataTable
                 ';
             })
             ->rawColumns([
-                'user_id',
                 'phone_number',
+                'user_id',
                 'call_timing',
                 'call_duration',
                 'sentiment',

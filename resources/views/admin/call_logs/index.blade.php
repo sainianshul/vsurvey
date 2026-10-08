@@ -68,8 +68,8 @@
                     <thead>
                         <tr>
                             <th class="w-1">S.No</th>
-                            <th>Caller / Agent</th>
                             <th>Voter Number</th>
+                            <th>Caller / Agent</th>
                             <th>Date & Time</th>
                             <th>Duration</th>
                             <th>Sentiment</th>
@@ -118,8 +118,8 @@
                 },
                 columns: [
                     { data: null, name: 'id', render: function (data, type, row, meta) { return meta.row + meta.settings._iDisplayStart + 1; }, orderable: false, searchable: false },
-                    { data: 'user_id', name: 'user_id', orderable: false, searchable: false },
                     { data: 'phone_number', name: 'phone_number' },
+                    { data: 'user_id', name: 'user_id', orderable: false, searchable: false },
                     { data: 'call_timing', name: 'call_timing', searchable: false },
                     { data: 'call_duration', name: 'call_duration', orderable: false, searchable: false },
                     { data: 'sentiment', name: 'sentiment', searchable: false },
