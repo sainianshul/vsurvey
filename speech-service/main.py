@@ -57,13 +57,13 @@ spk_model = None
 def download_extract(url, target_dir):
     if not os.path.exists(target_dir):
         os.makedirs("/app/models", exist_ok=True)
-        print(f"⬇️ Downloading {os.path.basename(url)}...")
+        print(f"Downloading {os.path.basename(url)}...")
         zip_path = f"/app/models/{os.path.basename(url)}"
         urllib.request.urlretrieve(url, zip_path)
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall("/app/models")
         os.remove(zip_path)
-        print(f"✅ Downloaded and extracted {target_dir}.")
+        print(f"Downloaded and extracted {target_dir}.")
 
 
 @app.on_event("startup")
@@ -75,7 +75,7 @@ def startup():
     
     model = Model(MODEL_DIR)
     spk_model = SpkModel(SPK_MODEL_DIR)
-    print("✅ Vosk ASR and Speaker models loaded and ready!")
+    print("Vosk ASR and Speaker models loaded and ready!")
 
 
 def convert_to_wav(input_path: str) -> str:
@@ -129,28 +129,37 @@ def transcribe_and_diarize(wav_path: str) -> str:
     return dialogue.strip()
 
 
+HINDI_ANALYSIS_PROMPT = """आप एक अत्यंत कुशल राजनीतिक सर्वेक्षण विश्लेषक हैं। नीचे एक फ़ोन कॉल की ट्रांसक्रिप्शन दी गई है जिसमें दो वक्ता हैं — एक सर्वेक्षक (Agent) और दूसरा मतदाता (Voter)।
+
+कॉल ट्रांसक्रिप्ट:
+\"\"\"
+{transcript}
+\"\"\"
+
+इस बातचीत का गहन विश्लेषण कीजिए। आपको केवल और केवल एक valid JSON object लौटाना है — कोई markdown, कोई extra text नहीं।
+
+अत्यंत महत्वपूर्ण नियम:
+1. "sentiment" को छोड़कर, JSON में सभी values हिंदी (देवनागरी लिपि) में होनी चाहिए।
+2. हर field में विस्तृत और अर्थपूर्ण जानकारी दीजिए — एक-दो शब्दों का जवाब अस्वीकार्य है।
+3. यदि कोई शिकायत या feedback नहीं है, तो उस array/string को खाली छोड़ दें।
+4. summary में कम से कम 2-3 पूर्ण वाक्य हों।
+
+JSON Structure (इसी format में output दें):
+{{
+  "sentiment": "positive" या "negative" या "neutral" (यह English में होना चाहिए),
+  "summary": "इस कॉल का 2-3 वाक्यों में सम्पूर्ण सारांश हिंदी में लिखें। बताएं कि मतदाता ने मुख्य रूप से क्या कहा, उनकी भावना कैसी थी, और बातचीत का कुल निष्कर्ष क्या रहा।",
+  "key_points": ["बातचीत में उठाए गए हर महत्वपूर्ण बिंदु को अलग-अलग विस्तार से लिखें", "दूसरा बिंदु"],
+  "complaints": ["मतदाता द्वारा उठाई गई हर शिकायत को विस्तार से लिखें। अगर कोई शिकायत नहीं है तो खाली array दें।"],
+  "feedback": "मतदाता ने सरकार, पार्टी, नेता या व्यवस्था के बारे में जो भी राय, टिप्पणी या प्रतिक्रिया दी है उसे यहाँ विस्तार से हिंदी में लिखें।",
+  "keywords": ["बेरोज़गारी", "महंगाई", "भ्रष्टाचार", "सड़क", "पानी"]
+}}"""
+
+
 def analyze_text_with_groq(text: str) -> dict:
     if not groq_client or not text.strip():
-        return {"sentiment": "unknown", "keywords": [], "complaints": [], "feedback": "No text or API key", "key_points": [], "model_used": "none"}
+        return {"sentiment": "unknown", "summary": "", "keywords": [], "complaints": [], "feedback": "", "key_points": [], "model_used": "none"}
         
-    prompt = f"""
-You are an expert political surveyor analyzing a phone call conversation in Hindi.
-The transcribed text from the call is diarized (Speaker 1 and Speaker 2):
-\"\"\"
-{text}
-\"\"\"
-
-Analyze the conversation. Usually, one speaker is the surveyor (asking questions) and the other is the voter (answering).
-Return ONLY a valid JSON object with no markdown formatting or extra text.
-IMPORTANT: All text values in the JSON (except sentiment) MUST BE IN HINDI LANGUAGE (Devanagari script).
-
-The JSON must have the following keys:
-- "sentiment": "positive", "negative", or "neutral" (overall sentiment of the voter towards the incumbent party/government. This MUST be in English).
-- "keywords": Array of strings representing important/major keywords mentioned (e.g. ["बेरोजगारी", "महंगाई", "सड़क"]). IN HINDI.
-- "complaints": Array of strings summarizing any complaints generated or raised by the voter. IN HINDI.
-- "feedback": String summarizing the feedback given by the voter. IN HINDI.
-- "key_points": Array of strings representing the key points detected in the conversation. IN HINDI.
-"""
+    prompt = HINDI_ANALYSIS_PROMPT.format(transcript=text)
 
     # 1. Start with the currently active model to avoid wasting time
     start_index = get_active_model_index()
@@ -187,7 +196,7 @@ The JSON must have the following keys:
             continue
             
     # If all Groq models fail (e.g. daily limit on all models reached)
-    return {"sentiment": "error", "keywords": [], "complaints": [], "feedback": f"All Groq models failed. Last Error: {last_error}", "key_points": [], "model_used": "none"}
+    return {"sentiment": "error", "summary": "", "keywords": [], "complaints": [], "feedback": f"All Groq models failed. Last Error: {last_error}", "key_points": [], "model_used": "none"}
 
 # ─── API Endpoints ────────────────────────────────
 
