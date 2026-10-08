@@ -88,45 +88,103 @@ def convert_to_wav(input_path: str) -> str:
 
 
 def transcribe_and_diarize(wav_path: str) -> str:
-    """Transcribes a WAV file and groups by speakers."""
+    """Transcribes a WAV file and groups by speakers using robust diarization."""
+    from scipy.spatial.distance import cosine
+    from scipy.cluster.hierarchy import linkage, fcluster
+
     wf = wave.open(wav_path, "rb")
-    rec = KaldiRecognizer(model, wf.getframerate(), spk_model)
+    framerate = wf.getframerate()
+    rec = KaldiRecognizer(model, framerate, spk_model)
     rec.SetWords(True)
 
-    results = []
-    
+    # ── Step 1: Transcribe with larger chunks for better speaker vectors ──
+    # 8000 frames at 16kHz = 0.5 sec chunks (double the original)
+    # Larger chunks = more audio data per speaker vector = better accuracy
+    raw_results = []
+
     while True:
-        data = wf.readframes(4000)
+        data = wf.readframes(8000)
         if len(data) == 0:
             break
         if rec.AcceptWaveform(data):
             res = json.loads(rec.Result())
             if "spk" in res and "text" in res and res["text"].strip():
-                results.append({"text": res["text"], "spk": res["spk"]})
+                raw_results.append({"text": res["text"], "spk": res["spk"]})
 
     final_res = json.loads(rec.FinalResult())
     if "spk" in final_res and "text" in final_res and final_res["text"].strip():
-        results.append({"text": final_res["text"], "spk": final_res["spk"]})
+        raw_results.append({"text": final_res["text"], "spk": final_res["spk"]})
     wf.close()
 
-    if not results:
+    if not raw_results:
         return ""
 
-    # Cluster the speaker vectors into 2 clusters (Speaker A and Speaker B)
-    # If there's only 1 valid sentence, clustering will fail with n_clusters=2
-    if len(results) < 2:
-        return f"Speaker 1: {results[0]['text']}"
+    if len(raw_results) == 1:
+        return f"Speaker 1: {raw_results[0]['text']}"
 
-    vectors = np.array([r["spk"] for r in results])
-    kmeans = KMeans(n_clusters=2, random_state=0, n_init=10).fit(vectors)
-    labels = kmeans.labels_
+    # ── Step 2: Merge very short consecutive segments to get longer, more stable vectors ──
+    # If a segment has very few words, merge it with the next one for a more reliable speaker vector
+    merged_results = []
+    buffer_text = ""
+    buffer_vectors = []
 
+    for r in raw_results:
+        word_count = len(r["text"].split())
+        buffer_text += (" " if buffer_text else "") + r["text"]
+        buffer_vectors.append(r["spk"])
+
+        # Flush when we have enough words (at least 3 words per segment)
+        if word_count >= 3 or len(buffer_vectors) >= 2:
+            # Average the speaker vectors of merged segments
+            avg_vector = np.mean(buffer_vectors, axis=0).tolist()
+            merged_results.append({"text": buffer_text.strip(), "spk": avg_vector})
+            buffer_text = ""
+            buffer_vectors = []
+
+    # Flush any remaining buffer
+    if buffer_text.strip():
+        avg_vector = np.mean(buffer_vectors, axis=0).tolist() if buffer_vectors else raw_results[-1]["spk"]
+        merged_results.append({"text": buffer_text.strip(), "spk": avg_vector})
+
+    if len(merged_results) < 2:
+        return f"Speaker 1: {merged_results[0]['text']}"
+
+    # ── Step 3: Cluster using Hierarchical Clustering with Cosine Distance ──
+    # This is far more robust than KMeans for speaker diarization because:
+    # - Cosine distance measures angle between vectors (direction), not magnitude
+    # - Speaker embeddings are best compared by direction, not Euclidean distance
+    vectors = np.array([r["spk"] for r in merged_results])
+
+    # Compute pairwise cosine distance matrix
+    n = len(vectors)
+    condensed_dist = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            condensed_dist.append(cosine(vectors[i], vectors[j]))
+    condensed_dist = np.array(condensed_dist)
+
+    # Handle edge case: all distances are 0 (identical vectors)
+    if np.all(condensed_dist < 0.01):
+        # All segments sound like the same speaker
+        dialogue = ""
+        for r in merged_results:
+            dialogue += f"Speaker 1: {r['text']}\n"
+        return dialogue.strip()
+
+    # Hierarchical clustering with average linkage
+    Z = linkage(condensed_dist, method='average')
+
+    # Cut the dendrogram at 2 clusters (we know there are 2 speakers in a call)
+    labels = fcluster(Z, t=2, criterion='maxclust')
+
+    # ── Step 4: Build the dialogue with speaker labels ──
     dialogue = ""
-    for i, res in enumerate(results):
-        speaker_id = labels[i] + 1  # 1 or 2
+    for i, res in enumerate(merged_results):
+        speaker_id = int(labels[i])
         dialogue += f"Speaker {speaker_id}: {res['text']}\n"
 
     return dialogue.strip()
+
 
 
 HINDI_ANALYSIS_PROMPT = """आप एक अत्यंत कुशल राजनीतिक सर्वेक्षण विश्लेषक हैं। नीचे एक फ़ोन कॉल की ट्रांसक्रिप्शन दी गई है जिसमें दो वक्ता हैं — एक सर्वेक्षक (Agent) और दूसरा मतदाता (Voter)।
