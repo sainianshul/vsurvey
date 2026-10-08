@@ -1,0 +1,376 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   admin-datatable.css — Production-Ready Reusable DataTable Styles
+   ═══════════════════════════════════════════════════════════════════════════
+   Load ONCE in the layout <head> via:
+       <link href="{{ asset('css/admin-datatable.css') }}" rel="stylesheet" />
+
+   This file handles ALL DataTable styling across the admin panel:
+   - Table layout & responsive handling (no horizontal scroll)
+   - Bottom bar (info, length select, pagination)
+   - Row hover, action buttons
+   - Skeleton loader animation
+   - Empty state
+   - Fade-in transition
+   - Light & dark mode support
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. TABLE CORE — Layout, width, responsiveness
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Force DataTables wrapper to never exceed parent */
+.dataTables_wrapper {
+    width: 100% !important;
+    overflow: hidden;
+}
+
+/* The <table> itself: fill the card, auto-size columns, prevent overflow */
+.dataTable {
+    width: 100% !important;
+    table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Kill min-width so columns shrink to fit — the #1 cause of horizontal scroll */
+.dataTable th,
+.dataTable td {
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Allow wrapping on columns that might have longer text (name, location, etc.) */
+.dataTable td.dt-wrap,
+.dataTable th.dt-wrap {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Responsive wrapper — graceful scroll ONLY on genuinely tiny screens */
+.dt-responsive-wrap {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. HEADER — Thead styling
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dataTable thead th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--bs-gray-600);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--bs-gray-200);
+    background: transparent;
+    user-select: none;
+}
+
+/* Sort icon spacing */
+.dataTable thead th.sorting,
+.dataTable thead th.sorting_asc,
+.dataTable thead th.sorting_desc {
+    cursor: pointer;
+    position: relative;
+    padding-right: 24px;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   3. BODY — Cell styling & row hover
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dataTable tbody td {
+    font-size: 0.835rem;
+    padding: 10px 12px;
+    border-bottom: 1px dashed var(--bs-gray-200);
+    color: var(--bs-gray-700);
+}
+
+.dataTable tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.dataTable tbody tr:hover > td {
+    background-color: var(--bs-gray-100) !important;
+}
+
+[data-bs-theme="dark"] .dataTable tbody tr:hover > td {
+    background-color: var(--bs-gray-200) !important;
+}
+
+/* Last row: no bottom border */
+.dataTable tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   4. BOTTOM BAR — Info | Length + Pagination
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dt-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px dashed var(--bs-gray-300);
+    padding: 14px 2px 4px;
+    margin-top: 4px;
+}
+
+/* ── Info text ──────────────────────────────────────────────────────────── */
+.dataTables_info {
+    font-size: 0.82rem;
+    color: var(--bs-gray-700);
+    font-weight: 600;
+    padding: 0;
+    white-space: nowrap;
+}
+
+/* ── Right group: length + pagination ──────────────────────────────────── */
+.dt-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ── Length select (Show X) ─────────────────────────────────────────────── */
+.dataTables_length {
+    padding: 0;
+}
+
+.dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--bs-gray-700);
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.dataTables_length select {
+    height: 32px;
+    padding: 0 28px 0 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 1px solid var(--bs-gray-300);
+    background-color: var(--bs-gray-100);
+    color: var(--bs-gray-800);
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23181c32'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: border-color 0.15s;
+}
+
+.dataTables_length select:focus {
+    outline: none;
+    border-color: var(--bs-primary);
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   5. PAGINATION — Numbered page buttons
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dataTables_paginate {
+    padding: 0;
+}
+
+.dataTables_paginate .paginate_button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px !important;
+    border-radius: 6px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: var(--bs-primary) !important;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    box-shadow: none !important;
+    outline: none !important;
+    line-height: 1 !important;
+}
+
+.dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+    background: var(--bs-primary-light, #f1eeff) !important;
+    color: var(--bs-primary) !important;
+}
+
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
+    background: var(--bs-primary) !important;
+    color: #fff !important;
+}
+
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {
+    opacity: 0.35 !important;
+    cursor: default !important;
+    color: var(--bs-primary) !important;
+    background: transparent !important;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   6. ACTION BUTTONS — Hover lift effect
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dataTable .btn-icon {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dataTable .btn-icon:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   7. TABLE WRAPPER — Fade-in animation
+   ────────────────────────────────────────────────────────────────────────── */
+
+[id$="-table-wrapper"] {
+    animation: dt-fadein 0.25s ease;
+}
+
+@keyframes dt-fadein {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   9. EMPTY STATE — Centered placeholder
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dt-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.dt-empty-state svg {
+    margin-bottom: 1.25rem;
+    opacity: 0.75;
+}
+
+.dt-empty-state .dt-empty-title {
+    color: var(--bs-gray-600);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.dt-empty-state .dt-empty-subtitle {
+    color: var(--bs-gray-500);
+    font-size: 0.82rem;
+    margin-top: 4px;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   10. SELECT2 FILTER FIX — Force full width
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dt-filter-select + .select2-container {
+    width: 100% !important;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   11. PROCESSING INDICATOR — Hidden (we use skeleton instead)
+   ────────────────────────────────────────────────────────────────────────── */
+
+.dataTables_processing {
+    display: none !important;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   12. MOBILE RESPONSIVE — Stack bottom bar on small screens
+   ────────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+
+    .dt-bottom-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .dt-right-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Compact cell padding on mobile */
+    .dataTable thead th,
+    .dataTable tbody td {
+        padding: 8px 8px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 991px) {
+
+    /* Make search input full-width on tablet */
+    .card-header .w-250px {
+        width: 100% !important;
+    }
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   13. DARK MODE OVERRIDES
+   ────────────────────────────────────────────────────────────────────────── */
+
+[data-bs-theme="dark"] .dataTables_length select {
+    background-color: var(--bs-gray-200);
+    border-color: var(--bs-gray-400);
+    color: var(--bs-gray-800);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23e4e6ef'/%3E%3C/svg%3E");
+}
+
+[data-bs-theme="dark"] .dataTables_info {
+    color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .dataTables_length label {
+    color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .dataTable thead th {
+    color: var(--bs-gray-500);
+    border-bottom-color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .dataTable tbody td {
+    color: var(--bs-gray-600);
+    border-bottom-color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .dt-bottom-bar {
+    border-top-color: var(--bs-gray-400);
+}

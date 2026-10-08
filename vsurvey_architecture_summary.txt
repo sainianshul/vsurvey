@@ -1,0 +1,57 @@
+======================================================
+VSURVEY PROJECT - ARCHITECTURE & SETUP SUMMARY
+======================================================
+Date: 2026-10-08
+
+1. CORE ARCHITECTURE
+------------------------------------------------------
+- Framework: Laravel 11 (PHP 8.4)
+- Database: MySQL
+- AI Microservice: Python FastAPI
+- Deployment: Docker Compose (App, MySQL, PhpMyAdmin, Speech Service, Queue)
+
+2. SPEECH-TO-TEXT & AI ANALYSIS FLOW
+------------------------------------------------------
+Goal: Process political survey phone calls (Hindi) offline/free and extract maximum information.
+
+- Step 1: User uploads Audio File (MP3/WAV) on Laravel Dashboard (`/admin/voice-to-text`).
+- Step 2: Audio is sent to the local Python Speech Microservice (`http://speech:5000/transcribe`).
+- Step 3: Audio is converted to 16kHz Mono WAV.
+- Step 4 (ASR & Diarization): 'Vosk' (offline model) transcribes the Hindi text. 
+          - Used Model: `vosk-model-small-hi-0.22` (42MB)
+          - Speaker Model: `vosk-model-spk-0.4` (14MB) + Scikit-Learn (KMeans)
+          - Result: Text is split between 'Speaker 1' (Interviewer) and 'Speaker 2' (Voter).
+- Step 5 (LLM Analysis): The diarized text is sent to Groq API (Llama-3 8B model).
+          - Prompt instructs Llama-3 to act as an expert political surveyor.
+          - Output is forced into a strict JSON format containing:
+              - sentiment (positive, negative, neutral)
+              - is_favour (boolean)
+              - call_summary (English summary)
+              - issues_mentioned (Array of keywords)
+- Step 6: The structured JSON response is sent back to Laravel and displayed on the UI.
+
+3. GROQ API LIMITS (FREE TIER - LLAMA 3 8B)
+------------------------------------------------------
+- API Key used: Stored in `.env` (GROQ_API_KEY)
+- Limits: ~30 Requests Per Minute (RPM), ~6,000 Tokens Per Minute, ~14,400 Requests Per Day.
+- This is perfectly sufficient for moderate real-world usage. If limits are hit, a Laravel queue (with sleep/retry) can be implemented.
+
+4. DOCKER RESOURCE OPTIMIZATION (WINDOWS WSL2)
+------------------------------------------------------
+Issue: Docker Desktop on Windows (WSL2 vmmem) consumes excessive RAM (e.g., 6GB) for caching, even when containers are lightweight.
+Solution: Limit WSL2 resources via `.wslconfig`.
+
+Steps to fix:
+1. Open Run (Win + R) -> `%userprofile%`
+2. Create a file named exactly `.wslconfig`
+3. Add the following content:
+   [wsl2]
+   memory=2GB
+   processors=2
+4. Restart Docker Desktop or Windows.
+
+5. FUTURE IMPLEMENTATIONS (ROADMAP)
+------------------------------------------------------
+- Twilio Webhook Integration: Automatically receive live call recordings from Twilio.
+- Dashboard Analytics: Create charts and tables in Laravel to visualize survey results (e.g., pie charts for 'is_favour', bar charts for 'issues_mentioned').
+- Laravel Job Queue: If bulk processing is required, move the HTTP request to the speech microservice into a background Job.

@@ -1,0 +1,415 @@
+{
+  "variable": [
+    {
+      "id": "baseUrl",
+      "key": "baseUrl",
+      "type": "string",
+      "name": "string",
+      "value": "http://localhost:8001"
+    }
+  ],
+  "info": {
+    "name": "Laravel VCanCare",
+    "_postman_id": "872e22e5-355f-40df-8604-dba91158a94e",
+    "description": "Api Documentatiom For VCanCare",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/auth/send-otp",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/auth/send-otp"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"phone\":\"9876543210\"}"
+            },
+            "description": "Send OTP to mobile number.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/auth/verify-otp",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/auth/verify-otp"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"phone\":\"9876543210\",\"otp\":\"123456\",\"name\":\"Anshul\",\"role\":1,\"fcm_token\":\"fcm_xxxxxxxxx\"}"
+            },
+            "description": "Verify OTP and authenticate user.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/auth/me",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/auth/me"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "description": "Get authenticated user details.\n\nNurse onboarding steps:\n\n1 = Basic Profile,\n2 = Care Types,\n3 = Education,\n4 = Work History,\n5 = Documents,\n6 = Availability,\n7 = Submit For Review,\n8 = Completed,\n\nNurse profile statuses:\n\n0 = Pending,\n1 = Under Review,\n2 = Approved,\n3 = Rejected,\n4 = Suspended"
+          },
+          "response": [
+            {
+              "header": [
+                {
+                  "key": "cache-control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "access-control-allow-origin",
+                  "value": "*"
+                }
+              ],
+              "code": 401,
+              "body": "{\"success\":false,\"message\":\"Unauthenticated\",\"timestamp\":\"2026-05-11T11:02:32.583180Z\"}",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/auth/logout",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/auth/logout"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "description": "Logout current user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Nurse Onboarding",
+      "description": "",
+      "item": [
+        {
+          "name": "Save Care Types",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/care-type",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/care-type"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"care_type_ids\":[\"consequatur\"]}"
+            },
+            "description": "Save nurse care types."
+          },
+          "response": []
+        },
+        {
+          "name": "Save Education",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/education",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/education"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"educations\":[{\"degree_or_course\":\"vmqeopfuudtdsufvyvddq\",\"institute_name\":\"amniihfqcoynlazghdtqt\",\"field_of_study\":\"qxbajwbpilpmufinllwlo\",\"start_year\":\"8107\",\"end_year\":\"8107\",\"is_currently_studying\":false}]}"
+            },
+            "description": "Save nurse education details.\n\nExample Request:\n\n{\n  \"educations\": [\n    {\n      \"degree_or_course\": \"B.Sc Nursing\",\n      \"institute_name\": \"PGI Chandigarh\",\n      \"field_of_study\": \"Nursing\",\n      \"start_year\": 2018,\n      \"end_year\": 2022,\n      \"is_currently_studying\": false\n    },\n    {\n      \"degree_or_course\": \"ICU Certification\",\n      \"institute_name\": \"AIIMS Delhi\",\n      \"field_of_study\": \"Critical Care\",\n      \"start_year\": 2023,\n      \"end_year\": null,\n      \"is_currently_studying\": true\n    }\n  ]\n}"
+          },
+          "response": []
+        },
+        {
+          "name": "Save Work History",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/work-history",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/work-history"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"work_histories\":[{\"role_or_position\":\"vmqeopfuudtdsufvyvddq\",\"organization_name\":\"amniihfqcoynlazghdtqt\",\"location\":\"qxbajwbpilpmufinllwlo\",\"start_date\":\"2026-05-11T11:02:32\",\"end_date\":\"2107-06-09\",\"is_currently_working\":true,\"description\":\"Dolorum amet iste laborum eius est dolor.\"}]}"
+            },
+            "description": "Save nurse work history details.\n\nExample Request:\n\n{\n  \"work_histories\": [\n    {\n      \"role_or_position\": \"ICU Nurse\",\n      \"organization_name\": \"PGI Chandigarh\",\n      \"location\": \"Chandigarh\",\n      \"start_date\": \"2020-01-01\",\n      \"end_date\": \"2023-12-31\",\n      \"is_currently_working\": false,\n      \"description\": \"Worked in ICU department.\"\n    },\n    {\n      \"role_or_position\": \"Senior Nurse\",\n      \"organization_name\": \"AIIMS Delhi\",\n      \"location\": \"Delhi\",\n      \"start_date\": \"2024-01-01\",\n      \"end_date\": null,\n      \"is_currently_working\": true,\n      \"description\": \"Currently working in emergency ward.\"\n    }\n  ]\n}"
+          },
+          "response": []
+        },
+        {
+          "name": "Save Documents",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/documents",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/documents"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            },
+            "description": "Save nurse verification documents.\n\nExample Request:\n\nmultipart/form-data\n\naadhar_document = \u003Cfile\u003E\npan_document = \u003Cfile\u003E\nnursing_certificate_document = \u003Cfile\u003E"
+          },
+          "response": []
+        },
+        {
+          "name": "Save Availability",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/availability",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/availability"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"available_from\":\"09:00\",\"available_to\":\"18:00\",\"available_days\":[\"friday\"]}"
+            },
+            "description": "Save nurse availability details.\n\nExample Request:\n\n```json\n{\n  \"available_from\": \"09:00\",\n  \"available_to\": \"18:00\",\n  \"available_days\": [\n    \"monday\",\n    \"tuesday\",\n    \"wednesday\",\n    \"thursday\",\n    \"friday\"\n  ],\n  \"is_available\": true\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit For Review",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/submit",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/submit"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "description": "Submit nurse onboarding profile for admin review."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Step Data",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/step-data/:step",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/step-data/:step",
+              "variable": [
+                {
+                  "id": "step",
+                  "key": "step",
+                  "value": "3",
+                  "description": "Onboarding step number."
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "description": "Get onboarding step data for edit or prefill."
+          },
+          "response": [
+            {
+              "header": [
+                {
+                  "key": "cache-control",
+                  "value": "no-cache, private"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "access-control-allow-origin",
+                  "value": "*"
+                }
+              ],
+              "code": 401,
+              "body": "{\"success\":false,\"message\":\"Unauthenticated\",\"timestamp\":\"2026-05-11T11:02:32.660115Z\"}",
+              "name": ""
+            }
+          ]
+        },
+        {
+          "name": "Reapply",
+          "request": {
+            "url": {
+              "host": "{{baseUrl}}",
+              "path": "api/v1/nurse/onboarding/reapply",
+              "query": [],
+              "raw": "{{baseUrl}}/api/v1/nurse/onboarding/reapply"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "description": "Re-submit rejected onboarding profile."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "key",
+        "type": "string"
+      }
+    ]
+  }
+}

@@ -1,0 +1,302 @@
+/* ============================================
+   VCanCares Admin — Custom Styles
+   Simple, stable, lightweight
+   ============================================ */
+
+/* ============================================
+   ICON FONTS — font-display:swap prevents FOIT
+   ============================================ */
+@font-face {
+    font-family: keenicons-outline;
+    font-display: swap;
+    src: url('/theme/dist/assets/plugins/global/fonts/keenicons/keenicons-outline.woff') format('woff'),
+         url('/theme/dist/assets/plugins/global/fonts/keenicons/keenicons-outline.ttf') format('truetype');
+}
+@font-face {
+    font-family: keenicons-duotone;
+    font-display: swap;
+    src: url('/theme/dist/assets/plugins/global/fonts/keenicons/keenicons-duotone.woff') format('woff'),
+         url('/theme/dist/assets/plugins/global/fonts/keenicons/keenicons-duotone.ttf') format('truetype');
+}
+@font-face {
+    font-family: keenicons-solid;
+    font-display: swap;
+    src: url('/theme/dist/assets/plugins/global/fonts/keenicons/keenicons-solid.woff') format('woff'),
+         url('/theme/dist/assets/plugins/global/fonts/keenicons/keenicons-solid.ttf') format('truetype');
+}
+
+/* ============================================
+   ROOT — Prevent infinite scroll
+   ============================================ */
+html { height: 100%; overflow: hidden; }
+body { height: 100%; overflow: auto; margin: 0; padding: 0; }
+
+/* ============================================
+   SIDEBAR — Fixed full-height with scroll
+   ============================================ */
+#kt_app_sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 101 !important;
+    overflow: hidden !important;
+}
+
+/* Logo — fixed height */
+#kt_app_sidebar_logo { flex: 0 0 auto !important; }
+
+/* Menu area — fills space between logo and footer */
+#kt_app_sidebar > .app-sidebar-menu {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Scroll wrapper — THE scrollable part */
+#kt_app_sidebar_menu_wrapper {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Footer — fixed height */
+#kt_app_sidebar_footer { flex: 0 0 auto !important; }
+
+/* ============================================
+   SIDEBAR SCROLLBAR — Thin & subtle
+   ============================================ */
+#kt_app_sidebar_menu_wrapper {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.12) transparent;
+}
+#kt_app_sidebar_menu_wrapper::-webkit-scrollbar { width: 4px; }
+#kt_app_sidebar_menu_wrapper::-webkit-scrollbar-track { background: transparent; }
+#kt_app_sidebar_menu_wrapper::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+#kt_app_sidebar_menu_wrapper:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); }
+[data-bs-theme="dark"] #kt_app_sidebar_menu_wrapper { scrollbar-color: rgba(255,255,255,0.1) transparent; }
+[data-bs-theme="dark"] #kt_app_sidebar_menu_wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+
+/* ============================================
+   ACCORDION SUB-MENUS
+   ============================================ */
+.menu-accordion .menu-sub { display: none; flex-direction: column; }
+.menu-accordion.show > .menu-sub { display: flex; }
+.menu-accordion .menu-arrow { transition: transform 0.2s ease; }
+.menu-accordion.show > .menu-link > .menu-arrow,
+.menu-accordion.here > .menu-link > .menu-arrow { transform: rotate(90deg); }
+
+/* ============================================
+   MOBILE DRAWER
+   ============================================ */
+@media (max-width: 991.98px) {
+    #kt_app_sidebar:not(.drawer-on) {
+        display: none !important;
+    }
+    #kt_app_sidebar.drawer-on {
+        display: flex !important;
+        height: 100vh !important;
+        width: 250px !important;
+    }
+}
+
+/* ============================================
+   SIDEBAR TEXT — Sharp thin black
+   ============================================ */
+[data-bs-theme="light"] .app-sidebar .menu-title {
+    color: #000000 !important;
+    font-weight: 400 !important; /* thin, sharp font */
+}
+[data-bs-theme="light"] .app-sidebar .menu-icon i,
+[data-bs-theme="light"] .app-sidebar .menu-icon .ki-outline {
+    color: #111111 !important; /* dark icon to match */
+}
+[data-bs-theme="light"] .app-sidebar .menu-heading {
+    color: #333333 !important;
+    font-weight: 500 !important;
+}
+
+/* ============================================
+   HOVER/ACTIVE STYLES — Purple accent
+   ============================================ */
+.app-sidebar .menu-link { transition: background 0.15s ease; }
+.app-sidebar .menu-link:hover .menu-title,
+.app-sidebar .menu-link.active .menu-title { color: #7239ea !important; }
+.app-sidebar .menu-link:hover .menu-icon i,
+.app-sidebar .menu-link:hover .menu-icon .ki-outline,
+.app-sidebar .menu-link.active .menu-icon i,
+.app-sidebar .menu-link.active .menu-icon .ki-outline { color: #7239ea !important; }
+.app-sidebar .menu-link.active .bullet-dot { background-color: #7239ea !important; }
+.app-sidebar .menu-link:hover .menu-arrow,
+.app-sidebar .menu-link.active .menu-arrow { color: #7239ea !important; }
+.app-sidebar .menu-sub .menu-link:hover .menu-title,
+.app-sidebar .menu-sub .menu-link.active .menu-title { color: #7239ea !important; }
+.app-sidebar .menu-link.active { background-color: rgba(114,57,234,0.06) !important; }
+.app-sidebar .menu-link:hover { background-color: rgba(114,57,234,0.04) !important; }
+.sidebar-footer-user { transition: background 0.15s ease; }
+.sidebar-footer-user:hover { background-color: rgba(114,57,234,0.04) !important; }
+
+/* ============================================
+   PREMIUM LAYOUT — Shadows instead of borders
+   ============================================ */
+.app-sidebar { border-right: 0 !important; box-shadow: 1px 0 6px rgba(0,0,0,0.06) !important; }
+[data-bs-theme="dark"] .app-sidebar { box-shadow: 1px 0 8px rgba(0,0,0,0.2) !important; }
+.app-header { border-bottom: 0 !important; box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important; }
+[data-bs-theme="dark"] .app-header { box-shadow: 0 1px 6px rgba(0,0,0,0.15) !important; }
+.card { border: 0 !important; box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important; }
+[data-bs-theme="dark"] .card { box-shadow: 0 1px 6px rgba(0,0,0,0.15) !important; }
+
+/* ============================================
+   DROPDOWN ANIMATION
+   ============================================ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   PREMIUM NESTED DROPDOWN (PURE CSS)
+   ============================================ */
+.premium-dropdown-parent { position: relative; }
+.premium-dropdown-sub {
+    position: absolute;
+    top: -10px;
+    right: -160px; /* offset to the right */
+    width: 150px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    z-index: 105;
+    background-color: var(--bs-body-bg);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.premium-dropdown-parent:hover .premium-dropdown-sub {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Fix dropdown arrow overlapping issue on small screens */
+@media (max-width: 768px) {
+    .premium-dropdown-sub {
+        right: auto;
+        left: -160px;
+    }
+}
+
+/* Premium Menu Link Hover */
+.premium-menu-link {
+    color: #333333;
+    transition: all 0.2s ease;
+}
+.premium-menu-link .menu-icon i {
+    color: #a1a5b7;
+    transition: all 0.2s ease;
+}
+.premium-menu-link:hover, .premium-menu-link.active {
+    background-color: rgba(114,57,234,0.06) !important;
+    color: #7239ea !important;
+}
+.premium-menu-link:hover .menu-icon i, .premium-menu-link.active .menu-icon i {
+    color: #7239ea !important;
+}
+
+/* ============================================
+   SIDEBAR TEXT SIZE INCREASES
+   ============================================ */
+.app-sidebar .menu-title {
+    font-size: 1.05rem !important; /* Slightly larger menu text */
+}
+.app-sidebar .menu-icon i, .app-sidebar .menu-icon .ki-outline {
+    font-size: 1.35rem !important; /* Slightly larger menu icons */
+}
+
+/* ============================================
+   FOOTER TEXT COLORS (LIGHT vs DARK MODE)
+   ============================================ */
+[data-bs-theme="light"] .footer-profile-label { color: #333333 !important; }
+[data-bs-theme="light"] .footer-profile-name { color: #000000 !important; }
+[data-bs-theme="light"] .footer-profile-icon { color: #111111 !important; }
+[data-bs-theme="light"] .footer-dropdown-name { color: #000000 !important; }
+[data-bs-theme="light"] .footer-dropdown-email { color: #111111 !important; }
+[data-bs-theme="light"] .premium-menu-link { color: #333333 !important; }
+
+[data-bs-theme="dark"] .footer-profile-label { color: #99a1b7 !important; }
+[data-bs-theme="dark"] .footer-profile-name { color: #ffffff !important; }
+[data-bs-theme="dark"] .footer-profile-icon { color: #ffffff !important; }
+[data-bs-theme="dark"] .footer-dropdown-name { color: #ffffff !important; }
+[data-bs-theme="dark"] .footer-dropdown-email { color: #99a1b7 !important; }
+[data-bs-theme="dark"] .premium-menu-link { color: #ffffff !important; }
+
+/* ============================================
+   SELECT2 FILTER ICON FIX
+   ============================================ */
+/* Fix overlap where select2 background covers the absolute positioned icon */
+.position-relative > .select2-container .select2-selection {
+    padding-left: 2.75rem !important; /* matches ps-11 */
+}
+.position-relative > i[class*="ki-"] {
+    z-index: 10 !important; /* Force icon above select2 */
+    pointer-events: none; /* Let clicks pass through to the select */
+}
+
+/* ============================================
+   ENTERPRISE PAGE AESTHETICS (Dark Mode Support)
+   ============================================ */
+.ep-border {
+    border: 1px solid rgba(0,0,0,0.08) !important;
+}
+[data-bs-theme="dark"] .ep-border {
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+.ep-bg-light {
+    background-color: #fafafa !important;
+}
+[data-bs-theme="dark"] .ep-bg-light {
+    background-color: #1a1a21 !important;
+}
+
+.ep-bg-light-2 {
+    background-color: #fcfcfc !important;
+}
+[data-bs-theme="dark"] .ep-bg-light-2 {
+    background-color: #1e1e27 !important;
+}
+
+.ep-label, .ep-icon {
+    color: #000000 !important;
+}
+[data-bs-theme="dark"] .ep-label, [data-bs-theme="dark"] .ep-icon {
+    color: #ffffff !important;
+}
+
+.ep-value {
+    color: #111111 !important;
+}
+[data-bs-theme="dark"] .ep-value {
+    color: #e4e6ef !important;
+}
+
+.ep-value-muted {
+    color: #333333 !important;
+}
+[data-bs-theme="dark"] .ep-value-muted {
+    color: #99a1b7 !important;
+}
+
+.ep-symbol {
+    background: rgba(0,0,0,0.05) !important;
+    color: #000000 !important;
+}
+[data-bs-theme="dark"] .ep-symbol {
+    background: rgba(255,255,255,0.05) !important;
+    color: #ffffff !important;
+}

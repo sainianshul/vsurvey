@@ -1,0 +1,87 @@
+# ============================================================
+# vsurvey — Docker Compose (FrankenPHP + Octane)
+# ============================================================
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vsurvey_app
+    restart: unless-stopped
+    working_dir: /var/www
+    ports:
+      - "9412:8000"
+    volumes:
+      - ./:/var/www
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - OCTANE_SERVER=frankenphp
+      - SPEECH_SERVICE_URL=http://speech:5000
+
+  # Queue Worker — processes jobs from Database
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vsurvey_queue
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["php", "artisan", "queue:work", "database", "--sleep=3", "--tries=3", "--max-time=3600"]
+
+  mysql:
+    image: mysql:8.0
+    container_name: vsurvey_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      MYSQL_USER: laravel
+    ports:
+      - "33412:3306"
+    volumes:
+      - vsurvey_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: vsurvey_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "40412:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql
+
+  # Speech-to-Text Microservice (Vosk Hindi - Offline, Free, Private)
+  speech:
+    build:
+      context: ./speech-service
+      dockerfile: Dockerfile
+    container_name: vsurvey_speech
+    restart: unless-stopped
+    ports:
+      - "5412:5000"
+    volumes:
+      - vsurvey_speech_models:/app/models
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+
+volumes:
+  vsurvey_mysql_data:
+  vsurvey_speech_models:
