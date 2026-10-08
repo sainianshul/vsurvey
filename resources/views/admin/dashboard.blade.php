@@ -7,7 +7,7 @@
         <div class="row align-items-center">
             <div class="col-auto">
                 <div class="page-pretitle">Overview</div>
-                <h2 class="page-title">Dashboard</h2>
+                <h2 class="page-title">Survey Dashboard</h2>
             </div>
         </div>
     </div>
@@ -20,31 +20,87 @@
                     <div class="row align-items-center">
                         <div class="col-auto">
                             <span class="bg-primary-lt text-primary avatar avatar-md">
-                                <i class="ti ti-users fs-2"></i>
+                                <i class="ti ti-phone fs-2"></i>
                             </span>
                         </div>
                         <div class="col">
-                            <div class="fw-bold fs-2" id="stat-total-users">
+                            <div class="fw-bold fs-2" id="stat-total-calls">
                                 <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
                             </div>
-                            <div class="text-secondary">Total Users</div>
+                            <div class="text-secondary">Total Call Logs</div>
                         </div>
                     </div>
-                    <a href="{{ route('admin.users.index') }}" class="text-muted small mt-2 d-block">View all →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-info-lt text-info avatar avatar-md">
+                                <i class="ti ti-calendar fs-2"></i>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="fw-bold fs-2" id="stat-today-calls">
+                                <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                            </div>
+                            <div class="text-secondary">Today's Calls</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-success-lt text-success avatar avatar-md">
+                                <i class="ti ti-mood-smile fs-2"></i>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="fw-bold fs-2" id="stat-positive-calls">
+                                <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                            </div>
+                            <div class="text-secondary">Positive Sentiment</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span class="bg-danger-lt text-danger avatar avatar-md">
+                                <i class="ti ti-mood-sad fs-2"></i>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <div class="fw-bold fs-2" id="stat-negative-calls">
+                                <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                            </div>
+                            <div class="text-secondary">Negative Sentiment</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Revenue + Chart Row --}}
+    {{-- Chart Row --}}
     <div class="row row-deck row-cards mb-3">
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header border-0">
-                    <h3 class="card-title">User Growth (Last 30 Days)</h3>
+                    <h3 class="card-title">Survey Calls (Last 30 Days)</h3>
                 </div>
                 <div class="card-body p-0">
-                    <div id="chart-users" style="min-height: 250px;">
+                    <div id="chart-calls" style="min-height: 250px;">
                         <div class="d-flex justify-content-center align-items-center h-100 py-5">
                             <div class="spinner-border text-secondary" role="status"></div>
                         </div>
@@ -59,23 +115,25 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Recent Users</h3>
+                    <h3 class="card-title">Recent Survey Calls</h3>
                     <div class="card-actions">
-                        <a href="{{ route('admin.users.index') }}" class="btn btn-sm">View All</a>
+                        <a href="{{ route('admin.call-logs.index') }}" class="btn btn-sm">View All Logs</a>
                     </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-vcenter card-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Joined</th>
+                                <th>Voter Number</th>
+                                <th>Agent</th>
+                                <th>Sentiment</th>
+                                <th>Timing</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="table-recent-users">
+                        <tbody id="table-recent-calls">
                             <tr>
-                                <td colspan="3" class="text-center py-4">
+                                <td colspan="5" class="text-center py-4">
                                     <div class="spinner-border text-secondary" role="status"></div>
                                 </td>
                             </tr>
@@ -96,37 +154,44 @@
             .then(response => response.json())
             .then(data => {
                 // Update Top Stats
-                document.getElementById('stat-total-users').innerText = data.total_users;
+                document.getElementById('stat-total-calls').innerText = data.total_calls;
+                document.getElementById('stat-today-calls').innerText = data.today_calls;
+                document.getElementById('stat-positive-calls').innerText = data.positive_calls;
+                document.getElementById('stat-negative-calls').innerText = data.negative_calls;
 
-                // Update Recent Users
-                const usersTbody = document.getElementById('table-recent-users');
-                if (data.recent_users && data.recent_users.length > 0) {
-                    let userHtml = '';
-                    data.recent_users.forEach(user => {
-                        userHtml += `
+                // Update Recent Calls
+                const callsTbody = document.getElementById('table-recent-calls');
+                if (data.recent_calls && data.recent_calls.length > 0) {
+                    let callsHtml = '';
+                    data.recent_calls.forEach(call => {
+                        let icon = call.sentiment.toLowerCase() === 'positive' ? 'ti-mood-smile' : (call.sentiment.toLowerCase() === 'negative' ? 'ti-mood-sad' : 'ti-mood-empty');
+                        callsHtml += `
                             <tr>
+                                <td class="fw-semibold text-primary">${call.phone ?? 'N/A'}</td>
+                                <td>${call.agent}</td>
                                 <td>
-                                    <div class="d-flex py-1 align-items-center">
-                                        <span class="avatar me-2 bg-primary-lt">${user.initials}</span>
-                                        <div class="flex-fill">
-                                            <div class="font-weight-medium"><a href="/admin/users/${user.id}" class="text-reset">${user.name}</a></div>
-                                        </div>
-                                    </div>
+                                    <span class="badge badge-outline rounded-0 text-${call.sentiment_color} fs-5">
+                                        <i class="ti ${icon} me-1"></i>${call.sentiment}
+                                    </span>
                                 </td>
-                                <td class="text-secondary">${user.phone ?? 'N/A'}</td>
-                                <td>${user.joined}</td>
+                                <td>${call.timing}</td>
+                                <td>
+                                    <a href="/admin/call-logs/${call.id}" class="btn btn-icon btn-sm btn-outline-primary rounded-0">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                </td>
                             </tr>
                         `;
                     });
-                    usersTbody.innerHTML = userHtml;
+                    callsTbody.innerHTML = callsHtml;
                 } else {
-                    usersTbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No recent users found</td></tr>';
+                    callsTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No recent calls found</td></tr>';
                 }
 
                 // Render Chart
                 if (typeof ApexCharts !== 'undefined') {
-                    document.getElementById('chart-users').innerHTML = '';
-                    new ApexCharts(document.getElementById('chart-users'), {
+                    document.getElementById('chart-calls').innerHTML = '';
+                    new ApexCharts(document.getElementById('chart-calls'), {
                         chart: {
                             type: "area",
                             fontFamily: 'inherit',
@@ -151,7 +216,7 @@
                             curve: "smooth",
                         },
                         series: [{
-                            name: "New Users",
+                            name: "Survey Calls",
                             data: data.chart.counts
                         }],
                         tooltip: { theme: 'dark' },
@@ -171,13 +236,16 @@
                         colors: ['#206bc4']
                     }).render();
                 } else {
-                    document.getElementById('chart-users').innerHTML = '<div class="text-center text-danger py-4">Chart library failed to load</div>';
+                    document.getElementById('chart-calls').innerHTML = '<div class="text-center text-danger py-4">Chart library failed to load</div>';
                 }
             })
             .catch(error => {
                 console.error("Error loading dashboard stats:", error);
-                document.getElementById('stat-total-users').innerText = 'Error';
-                document.getElementById('chart-users').innerHTML = '<div class="text-center text-danger py-4">Failed to load chart</div>';
+                document.getElementById('stat-total-calls').innerText = 'Error';
+                document.getElementById('stat-today-calls').innerText = 'Error';
+                document.getElementById('stat-positive-calls').innerText = 'Error';
+                document.getElementById('stat-negative-calls').innerText = 'Error';
+                document.getElementById('chart-calls').innerHTML = '<div class="text-center text-danger py-4">Failed to load chart</div>';
             });
     });
 </script>

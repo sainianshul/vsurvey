@@ -19,52 +19,50 @@ class DashboardController extends Controller
 
     public function stats()
     {
-        // Cache the dashboard stats for 5 minutes
-        $data = Cache::remember('admin.dashboard.stats', 300, function () {
+        $data = Cache::remember('admin.dashboard.stats', 60, function () {
             
             // Top Level Stats
-            $totalUsers = User::count();
+            $totalCalls = \App\Models\CallLog::count();
+            $todayCalls = \App\Models\CallLog::whereDate('created_at', Carbon::today())->count();
+            $positiveCalls = \App\Models\CallLog::where('sentiment', 'positive')->count();
+            $negativeCalls = \App\Models\CallLog::where('sentiment', 'negative')->count();
             
-            // Recent Users for the table
-            $recentUsers = User::latest()
-                ->take(5)
-                ->get()
-                ->map(function($user) {
-                    return [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'initials' => strtoupper(substr($user->name ?? 'US', 0, 2)),
-                        'phone' => $user->phone,
-                        'joined' => $user->created_at->format('d M Y'),
-                        'status' => $user->status,
-                        'status_name' => $user->status_name,
-                        'status_color' => $user->status === User::STATUS_ACTIVE ? 'success' : ($user->status === User::STATUS_PENDING ? 'warning' : 'danger')
-                    ];
-                });
+            // Recent Calls for the table
+            $recentCalls = \App\Models\CallLog::with('user')->latest()->take(5)->get()->map(function($call) {
+                return [
+                    'id' => $call->id,
+                    'phone' => $call->phone_number,
+                    'agent' => $call->user ? $call->user->name : 'Webhook',
+                    'sentiment' => ucfirst($call->sentiment ?? 'Neutral'),
+                    'sentiment_color' => strtolower($call->sentiment) == 'positive' ? 'success' : (strtolower($call->sentiment) == 'negative' ? 'danger' : 'secondary'),
+                    'timing' => $call->call_timing ? $call->call_timing->format('d M Y, h:i A') : $call->created_at->format('d M Y, h:i A')
+                ];
+            });
 
-            // Chart Data: Users added in the last 30 days
+            // Chart Data: Calls over the last 30 days
             $chartDates = [];
             $chartCounts = [];
             
             $startDate = Carbon::now()->subDays(29)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
             
-            // Get counts grouped by date
-            $userCounts = User::whereBetween('created_at', [$startDate, $endDate])
+            $callCounts = \App\Models\CallLog::whereBetween('created_at', [$startDate, $endDate])
                 ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
                 ->groupBy('date')
                 ->pluck('count', 'date');
                 
-            // Fill missing dates with 0
             for ($date = clone $startDate; $date->lte($endDate); $date->addDay()) {
                 $dateStr = $date->format('Y-m-d');
                 $chartDates[] = $date->format('d M');
-                $chartCounts[] = $userCounts[$dateStr] ?? 0;
+                $chartCounts[] = $callCounts[$dateStr] ?? 0;
             }
 
             return [
-                'total_users' => number_format($totalUsers),
-                'recent_users' => $recentUsers,
+                'total_calls' => number_format($totalCalls),
+                'today_calls' => number_format($todayCalls),
+                'positive_calls' => number_format($positiveCalls),
+                'negative_calls' => number_format($negativeCalls),
+                'recent_calls' => $recentCalls,
                 'chart' => [
                     'dates' => $chartDates,
                     'counts' => $chartCounts
