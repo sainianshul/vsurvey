@@ -19,6 +19,9 @@ Route::prefix('v1')->group(function () {
     })->middleware('auth:sanctum');
 
     // Public Routes
+    Route::post('/webhook/telecmi', [\App\Http\Controllers\Api\V1\WebhookController::class, 'handleIncomingCall']);
+    Route::post('/webhook/twilio', [\App\Http\Controllers\Api\V1\WebhookController::class, 'handleIncomingCall']);
+    
     Route::prefix('auth')->group(function () {
         Route::post('send-otp', [\App\Http\Controllers\Api\V1\AuthController::class, 'sendOtp']);
         Route::post('verify-otp', [\App\Http\Controllers\Api\V1\AuthController::class, 'verifyOtp']);
