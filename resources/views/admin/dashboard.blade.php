@@ -17,7 +17,7 @@
         <div class="col-sm-6 col-lg-3">
             <div class="card card-sm">
                 <div class="card-body">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center mb-2">
                         <div class="col-auto">
                             <span class="bg-primary-lt text-primary avatar avatar-md">
                                 <i class="ti ti-phone fs-2"></i>
@@ -30,13 +30,14 @@
                             <div class="text-secondary">Total Call Logs</div>
                         </div>
                     </div>
+                    <a href="{{ route('admin.call-logs.index') }}" class="text-muted small d-block">View all →</a>
                 </div>
             </div>
         </div>
         <div class="col-sm-6 col-lg-3">
             <div class="card card-sm">
                 <div class="card-body">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center mb-2">
                         <div class="col-auto">
                             <span class="bg-info-lt text-info avatar avatar-md">
                                 <i class="ti ti-calendar fs-2"></i>
@@ -49,13 +50,14 @@
                             <div class="text-secondary">Today's Calls</div>
                         </div>
                     </div>
+                    <a href="{{ route('admin.call-logs.index') }}" class="text-muted small d-block">View all →</a>
                 </div>
             </div>
         </div>
         <div class="col-sm-6 col-lg-3">
             <div class="card card-sm">
                 <div class="card-body">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center mb-2">
                         <div class="col-auto">
                             <span class="bg-success-lt text-success avatar avatar-md">
                                 <i class="ti ti-mood-smile fs-2"></i>
@@ -68,13 +70,14 @@
                             <div class="text-secondary">Positive Sentiment</div>
                         </div>
                     </div>
+                    <a href="{{ route('admin.call-logs.index') }}" class="text-muted small d-block">View all →</a>
                 </div>
             </div>
         </div>
         <div class="col-sm-6 col-lg-3">
             <div class="card card-sm">
                 <div class="card-body">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center mb-2">
                         <div class="col-auto">
                             <span class="bg-danger-lt text-danger avatar avatar-md">
                                 <i class="ti ti-mood-sad fs-2"></i>
@@ -87,6 +90,7 @@
                             <div class="text-secondary">Negative Sentiment</div>
                         </div>
                     </div>
+                    <a href="{{ route('admin.call-logs.index') }}" class="text-muted small d-block">View all →</a>
                 </div>
             </div>
         </div>
