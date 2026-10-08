@@ -22,8 +22,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/voice-to-text', [\App\Http\Controllers\Admin\DashboardController::class, 'voiceToText'])->name('voice-to-text');
         Route::post('/voice-to-text', [\App\Http\Controllers\Admin\DashboardController::class, 'processVoiceToText'])->name('voice-to-text.process');
         
-        // AI Logs & Stats
+        // AI Logs & Stats (Old)
         Route::get('/ai-logs', [\App\Http\Controllers\Admin\DashboardController::class, 'aiLogs'])->name('ai-logs');
+
+        // New Call Logs (Manual Upload & Datatable)
+        Route::resource('call-logs', \App\Http\Controllers\Admin\CallLogController::class)->only(['index', 'create', 'store', 'show']);
 
         // Profile
         Route::get('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('profile.index');
