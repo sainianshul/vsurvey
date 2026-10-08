@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Models\AILog;
+use App\Models\CallLog;
+use App\Models\User;
 
 class WebhookController extends Controller
 {
@@ -17,21 +18,31 @@ class WebhookController extends Controller
     {
         Log::info('Incoming Call Webhook Received', $request->all());
 
-        // Extract the recording URL based on the provider (Twilio or Telecmi)
-        // Twilio sends 'RecordingUrl'
-        // Telecmi typically sends 'recording_url' or 'file'
+        // Extract the recording URL
         $recordingUrl = $request->input('RecordingUrl') 
                         ?? $request->input('recording_url') 
                         ?? $request->input('file_url');
 
-        $callId = $request->input('CallSid') // Twilio
-                  ?? $request->input('uuid') // Telecmi
-                  ?? uniqid('call_');
+        $providerCallId = $request->input('CallSid') // Twilio
+                  ?? $request->input('uuid'); // Telecmi
+                  
+        $fromNumber = $request->input('From') ?? $request->input('from'); // Agent
+        $toNumber = $request->input('To') ?? $request->input('to'); // Voter
+        $duration = $request->input('CallDuration') ?? $request->input('duration');
+
+        // Prevent Duplicate Processing
+        if ($providerCallId && CallLog::where('provider_call_id', $providerCallId)->exists()) {
+            Log::info('Webhook ignored: Call already processed.', ['call_id' => $providerCallId]);
+            return response()->json(['status' => 'ignored', 'message' => 'Call already processed']);
+        }
 
         if (!$recordingUrl) {
             Log::warning('No recording URL found in webhook payload', $request->all());
             return response()->json(['status' => 'ignored', 'message' => 'No recording URL provided']);
         }
+
+        // Try to link to an agent based on From number
+        $agent = User::where('phone', 'like', '%' . ltrim($fromNumber, '+') . '%')->first();
 
         try {
             // 1. Download the audio file from the provider
@@ -42,7 +53,7 @@ class WebhookController extends Controller
             }
 
             // Create a temporary file to send to our Python Microservice
-            $tempFilePath = sys_get_temp_dir() . '/' . $callId . '.mp3';
+            $tempFilePath = sys_get_temp_dir() . '/' . ($providerCallId ?? uniqid('call_')) . '.mp3';
             file_put_contents($tempFilePath, $audioContent);
 
             // 2. Send the audio to our Python Speech-to-Text Microservice
@@ -51,7 +62,7 @@ class WebhookController extends Controller
             $response = Http::attach(
                 'file', 
                 file_get_contents($tempFilePath), 
-                $callId . '.mp3'
+                ($providerCallId ?? 'webhook') . '.mp3'
             )->post($speechServiceUrl);
 
             // Cleanup temp file
@@ -61,26 +72,34 @@ class WebhookController extends Controller
             if ($response->successful()) {
                 $result = $response->json();
                 
-                if (isset($result['analysis'])) {
-                    AILog::create([
-                        'filename' => $callId,
-                        'model_used' => $result['analysis']['model_used'] ?? 'unknown',
-                        'sentiment' => $result['analysis']['sentiment'] ?? 'unknown',
-                        'is_success' => true,
-                        'full_response' => $result
-                    ]);
-                }
+                $analysis = $result['analysis'] ?? [];
                 
-                Log::info('Successfully processed webhook call: ' . $callId);
+                CallLog::create([
+                    'provider_call_id' => $providerCallId,
+                    'user_id' => $agent ? $agent->id : null,
+                    'phone_number' => $toNumber ?? 'Unknown',
+                    'name' => null,
+                    'call_timing' => now(),
+                    'call_duration' => $duration,
+                    'audio_text' => $result['text'] ?? null,
+                    'sentiment' => $analysis['sentiment'] ?? 'unknown',
+                    'ai_response' => $result,
+                    'model_used' => $analysis['model_used'] ?? 'unknown',
+                    'is_success' => true
+                ]);
+                
+                Log::info('Successfully processed webhook call: ' . $providerCallId);
                 return response()->json(['status' => 'success', 'data' => $result]);
             }
 
             // Log Error from microservice
-            AILog::create([
-                'filename' => $callId,
+            CallLog::create([
+                'provider_call_id' => $providerCallId,
+                'phone_number' => $toNumber ?? 'Unknown',
+                'call_timing' => now(),
                 'model_used' => 'none',
                 'is_success' => false,
-                'error_message' => 'Speech service error: ' . $response->body()
+                'ai_response' => ['error_message' => 'Speech service error: ' . $response->body()]
             ]);
 
             return response()->json(['status' => 'error', 'message' => 'Speech service failed'], 500);
@@ -88,11 +107,13 @@ class WebhookController extends Controller
         } catch (\Exception $e) {
             Log::error('Webhook Processing Error: ' . $e->getMessage());
             
-            AILog::create([
-                'filename' => $callId,
+            CallLog::create([
+                'provider_call_id' => $providerCallId,
+                'phone_number' => $toNumber ?? 'Unknown',
+                'call_timing' => now(),
                 'model_used' => 'none',
                 'is_success' => false,
-                'error_message' => 'Webhook Exception: ' . $e->getMessage()
+                'ai_response' => ['error_message' => 'Webhook Exception: ' . $e->getMessage()]
             ]);
 
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
