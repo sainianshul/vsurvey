@@ -189,26 +189,7 @@
                 </div>
                 <div class="card-body p-4 bg-light" style="max-height: 800px; overflow-y: auto;">
                     @if($callLog->audio_text)
-                        @php
-                            $lines = explode("\n", $callLog->audio_text);
-                        @endphp
-                        @foreach($lines as $line)
-                            @if(trim($line) != '')
-                                @if(str_contains(strtolower($line), 'speaker 1:'))
-                                    <div class="mb-3">
-                                        <div class="text-primary fw-bold mb-1">Speaker 1 (Agent):</div>
-                                        <div class="bg-white p-3 border rounded shadow-sm">{{ str_replace(['Speaker 1:', 'speaker 1:'], '', $line) }}</div>
-                                    </div>
-                                @elseif(str_contains(strtolower($line), 'speaker 2:'))
-                                    <div class="mb-3 text-end">
-                                        <div class="text-success fw-bold mb-1">Speaker 2 (Voter):</div>
-                                        <div class="bg-success-lt p-3 border rounded shadow-sm d-inline-block text-start">{{ str_replace(['Speaker 2:', 'speaker 2:'], '', $line) }}</div>
-                                    </div>
-                                @else
-                                    <p style="font-size: 1.05rem; line-height: 1.6; color: #333;">{{ $line }}</p>
-                                @endif
-                            @endif
-                        @endforeach
+                        <div style="font-size: 1.1rem; line-height: 1.8; color: #333; white-space: pre-wrap;">{{ $callLog->audio_text }}</div>
                     @else
                         <div class="empty">
                             <div class="empty-icon"><i class="ti ti-microphone-off fs-1 text-muted"></i></div>
